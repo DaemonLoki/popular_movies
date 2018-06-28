@@ -10,8 +10,8 @@ import com.stefanblos.popularmovies.Model.Movie;
 
 import java.util.ArrayList;
 
-/*
-    Adapter that manages the content of the RecyclerView holding the Movie Posters
+/**
+ *  Adapter that manages the content of the RecyclerView holding the Movie Posters
  */
 public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ViewHolder> {
 
@@ -48,6 +48,11 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     @Override
     public int getItemCount() {
         return mMovieList.size();
+    }
+
+    public void setMovies(ArrayList<Movie> movies) {
+        mMovieList = movies;
+        notifyDataSetChanged();
     }
 
 }
