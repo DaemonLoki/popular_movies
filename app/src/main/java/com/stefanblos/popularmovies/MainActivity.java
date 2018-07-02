@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new MovieListAdapter(mMovieList);
+        mAdapter = new MovieListAdapter(mMovieList, this);
         recyclerView.setAdapter(mAdapter);
     }
 

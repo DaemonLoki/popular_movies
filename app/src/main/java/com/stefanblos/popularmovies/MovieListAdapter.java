@@ -1,11 +1,14 @@
 package com.stefanblos.popularmovies;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
 import com.stefanblos.popularmovies.Model.Movie;
 
 import java.util.ArrayList;
@@ -17,23 +20,26 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        final TextView movieTitleTextView;
+        final ImageView moviePosterImageView;
 
         ViewHolder(View v) {
             super(v);
-            movieTitleTextView = v.findViewById(R.id.tv_movie_title);
+            moviePosterImageView = v.findViewById(R.id.iv_movie_poster);
         }
 
     }
 
     private ArrayList<Movie> mMovieList;
+    private Context mContext;
 
-    MovieListAdapter(ArrayList<Movie> movies) {
+    MovieListAdapter(ArrayList<Movie> movies, Context context) {
         mMovieList = movies;
+        mContext = context;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.movie_list_item, parent, false);
         return new ViewHolder(v);
@@ -42,7 +48,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Movie movie = mMovieList.get(position);
-        holder.movieTitleTextView.setText(movie.getTitle());
+        Picasso.with(mContext)
+                .load(movie.getImageLink())
+                .into(holder.moviePosterImageView);
     }
 
     @Override
