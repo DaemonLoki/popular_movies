@@ -18,23 +18,32 @@ import java.util.ArrayList;
  */
 public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ViewHolder> {
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         final ImageView moviePosterImageView;
 
         ViewHolder(View v) {
             super(v);
             moviePosterImageView = v.findViewById(R.id.iv_movie_poster);
+            v.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            mClickListener.onMoviePosterClicked(mMovieList.get(position), moviePosterImageView);
         }
 
     }
 
     private ArrayList<Movie> mMovieList;
     private Context mContext;
+    private final OnMoviePosterClickedListener mClickListener;
 
     MovieListAdapter(ArrayList<Movie> movies, Context context) {
         mMovieList = movies;
         mContext = context;
+        mClickListener = (OnMoviePosterClickedListener) context;
     }
 
     @NonNull
@@ -61,6 +70,10 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     public void setMovies(ArrayList<Movie> movies) {
         mMovieList = movies;
         notifyDataSetChanged();
+    }
+
+    public interface OnMoviePosterClickedListener {
+        void onMoviePosterClicked(Movie clickedMovie, ImageView imageView);
     }
 
 }

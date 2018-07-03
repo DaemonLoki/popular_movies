@@ -1,19 +1,24 @@
 package com.stefanblos.popularmovies;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.ImageView;
 
 import com.stefanblos.popularmovies.Model.Movie;
+import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieListAdapter.OnMoviePosterClickedListener {
 
     private ArrayList<Movie> mMovieList = new ArrayList<>();
     private MovieListAdapter mAdapter;
@@ -38,6 +43,16 @@ public class MainActivity extends AppCompatActivity {
         String apiKey = getString(R.string.moviedb_api_key);
         URL url = HttpHelper.createMovieDBUrl(mSearchType, apiKey);
         new MovieFetchTask().execute(url);
+    }
+
+    @Override
+    public void onMoviePosterClicked(Movie clickedMovie, ImageView imageView) {
+        Intent intent = new Intent(this, MovieDetailActivity.class);
+        intent.putExtra(Constants.INTENT_MOVIE_EXTRA, clickedMovie);
+        ActivityOptionsCompat options = ActivityOptionsCompat
+                .makeSceneTransitionAnimation(this,
+                        imageView, ViewCompat.getTransitionName(imageView));
+        startActivity(intent, options.toBundle());
     }
 
     /**
