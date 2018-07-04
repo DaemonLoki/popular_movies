@@ -1,6 +1,7 @@
 package com.stefanblos.popularmovies;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     private TextView mTitleTV;
     private LinearLayout mSubTitleLL;
     private TextView mDescriptionTV;
+    private ImageView mFavoriteImageView;
 
     private static final float ANIMATION_OFFSET = 800.0f;
 
@@ -41,6 +43,7 @@ public class MovieDetailActivity extends AppCompatActivity {
             return;
         }
 
+        mFavoriteImageView = findViewById(R.id.iv_favorite);
         mBackgroundView = findViewById(R.id.view_background);
         mTitleTV = findViewById(R.id.tv_movie_title);
         mSubTitleLL = findViewById(R.id.ll_sub_title);
@@ -50,7 +53,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         // setup movie image
         ImageView movieImageView = findViewById(R.id.iv_movie_poster);
-        Movie movie = intent.getParcelableExtra(Constants.INTENT_MOVIE_EXTRA);
+        final Movie movie = intent.getParcelableExtra(Constants.INTENT_MOVIE_EXTRA);
         Picasso.with(this).load(movie.getImageLink()).into(movieImageView);
 
         String voteAvgText = String.valueOf(movie.getVoteAvg()) + " / 10";
@@ -60,7 +63,22 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         setTitle(movie.getTitle());
 
+        setFavoriteIcon(movie);
+        mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                movie.setFavorite(!movie.isFavorite());
+                setFavoriteIcon(movie);
+            }
+        });
+
         enterAnimation();
+    }
+
+    private void setFavoriteIcon(Movie movie) {
+        Drawable d = getDrawable(movie.isFavorite()
+                ? R.drawable.ic_star_filled : R.drawable.ic_star_empty);
+        mFavoriteImageView.setImageDrawable(d);
     }
 
     @Override
