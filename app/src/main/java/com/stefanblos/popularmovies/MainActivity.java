@@ -8,6 +8,8 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.stefanblos.popularmovies.Model.Movie;
@@ -37,6 +39,29 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         recyclerView.setLayoutManager(layoutManager);
         mAdapter = new MovieListAdapter(mMovieList, this);
         recyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_popular:
+                mSearchType = HttpHelper.MOVIE_DB_POPULAR;
+                fetchMovies();
+                break;
+            case R.id.menu_item_top_rated:
+                mSearchType = HttpHelper.MOVIE_DB_TOP_RATED;
+                fetchMovies();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     private void fetchMovies() {
