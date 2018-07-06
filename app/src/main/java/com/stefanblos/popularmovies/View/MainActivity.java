@@ -1,4 +1,4 @@
-package com.stefanblos.popularmovies;
+package com.stefanblos.popularmovies.View;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -16,7 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
+import com.stefanblos.popularmovies.ViewModel.MainViewModel;
 import com.stefanblos.popularmovies.Model.Movie;
+import com.stefanblos.popularmovies.R;
 import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
 

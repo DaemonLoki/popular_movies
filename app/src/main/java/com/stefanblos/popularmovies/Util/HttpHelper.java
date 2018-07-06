@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.stefanblos.popularmovies.Model.Movie;
+import com.stefanblos.popularmovies.Model.Review;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -39,6 +41,11 @@ public class HttpHelper {
     final static String KEY_VOTE_AVERAGE = "vote_average";
     final static String KEY_RELEASE_DATE = "release_date";
 
+    // REVIEW CONSTANTS
+    private final static String MOVIE_DB_REVIEWS_KEY = "reviews";
+    private final static String KEY_AUTHOR = "author";
+    private final static String KEY_CONTENT = "content";
+
     /*
      * This method is intended to create the URL for the AsyncTask that fetches the movie list
      * depending on the search type (popular or top rated) that is currently selected
@@ -50,6 +57,26 @@ public class HttpHelper {
                         .appendPath(searchType)
                         .appendQueryParameter(MOVIE_DB_API_KEY_QUERY, apiKey)
                         .build();
+        Log.d(TAG, "Built uri is: " + builtUri.toString());
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "URL could not be created!", e.fillInStackTrace());
+            return null;
+        }
+    }
+
+    /*
+     * This method creates a URL to fetch the reviews for a movie with the given id
+     */
+    @Nullable
+    public static URL createMovieReviewsUrl(String movieId, String apiKey) {
+        Uri builtUri =
+                Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
+                .appendPath(movieId)
+                .appendPath(MOVIE_DB_REVIEWS_KEY)
+                .appendQueryParameter(MOVIE_DB_API_KEY_QUERY, apiKey)
+                .build();
         Log.d(TAG, "Built uri is: " + builtUri.toString());
         try {
             return new URL(builtUri.toString());
@@ -104,6 +131,24 @@ public class HttpHelper {
         }
     }
 
+    public static List<Review> getReviewsFromJSONString(String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONArray resultsArray = jsonObject.getJSONArray("results");
+            ArrayList<Review> reviews = new ArrayList<>();
+            for (int i = 0; i < resultsArray.length(); i++) {
+                Review review = getReviewFromJSONObject(resultsArray.getJSONObject(i));
+                if (review != null) {
+                    reviews.add(review);
+                }
+            }
+            return reviews;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     /*
      * Method to get a single movie with all attributes from a JSON object
      */
@@ -118,6 +163,19 @@ public class HttpHelper {
             float vote_avg = (float) jsonObj.getDouble(KEY_VOTE_AVERAGE);
             String releaseDate = jsonObj.getString(KEY_RELEASE_DATE);
             return new Movie(id, title, imageUrl, description, vote_avg, releaseDate);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Review getReviewFromJSONObject(JSONObject jsonObject) {
+        try {
+            String author = jsonObject.getString(KEY_AUTHOR);
+            String content = jsonObject.getString(KEY_CONTENT);
+            Log.d(TAG, "Review: author: " + author + ", content: " + content);
+            return new Review(author, content);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

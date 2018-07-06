@@ -1,4 +1,4 @@
-package com.stefanblos.popularmovies;
+package com.stefanblos.popularmovies.View;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.stefanblos.popularmovies.Model.Movie;
+import com.stefanblos.popularmovies.R;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Movie movie = mMovieList.get(position);
         Picasso.with(mContext)
                 .load(movie.getImageLink())

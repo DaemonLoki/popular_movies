@@ -1,4 +1,4 @@
-package com.stefanblos.popularmovies;
+package com.stefanblos.popularmovies.ViewModel;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;

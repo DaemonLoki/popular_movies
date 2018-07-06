@@ -1,13 +1,18 @@
-package com.stefanblos.popularmovies;
+package com.stefanblos.popularmovies.View;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,7 +24,16 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.stefanblos.popularmovies.Data.AppDatabase;
 import com.stefanblos.popularmovies.Model.Movie;
+import com.stefanblos.popularmovies.Model.Review;
+import com.stefanblos.popularmovies.R;
 import com.stefanblos.popularmovies.Util.Constants;
+import com.stefanblos.popularmovies.Util.HttpHelper;
+import com.stefanblos.popularmovies.ViewModel.MovieDetailViewModel;
+import com.stefanblos.popularmovies.ViewModel.MovieDetailViewModelFactory;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
@@ -27,7 +41,6 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     // UI
     private View mBackgroundView;
-    private TextView mTitleTV;
     private LinearLayout mSubTitleLL;
     private TextView mDescriptionTV;
     private ImageView mFavoriteImageView;
@@ -37,6 +50,7 @@ public class MovieDetailActivity extends AppCompatActivity {
     private AppDatabase mDb;
     private Movie mMovie;
     private boolean isFavoriteMovie = false;
+    private ReviewListAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +67,6 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         mFavoriteImageView = findViewById(R.id.iv_favorite);
         mBackgroundView = findViewById(R.id.view_background);
-        mTitleTV = findViewById(R.id.tv_movie_title);
         mSubTitleLL = findViewById(R.id.ll_sub_title);
         TextView voteAvgTV = findViewById(R.id.tv_vote_avg);
         TextView releaseDateTV = findViewById(R.id.tv_release_date);
@@ -73,16 +86,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         mDb = AppDatabase.getInstance(getApplicationContext());
 
-        MovieDetailViewModelFactory f = new MovieDetailViewModelFactory(mDb, mMovie.getId());
-        final MovieDetailViewModel viewModel =
-                ViewModelProviders.of(this, f).get(MovieDetailViewModel.class);
-        viewModel.getMovie().observe(this, new Observer<Movie>() {
-            @Override
-            public void onChanged(@Nullable Movie movie) {
-                isFavoriteMovie = (movie != null);
-                setFavoriteIcon();
-            }
-        });
+        setupViewModel();
         mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -94,7 +98,31 @@ public class MovieDetailActivity extends AppCompatActivity {
             }
         });
 
+        RecyclerView recyclerView = findViewById(R.id.rv_reviews);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(
+                this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        mAdapter = new ReviewListAdapter();
+        recyclerView.setAdapter(mAdapter);
+        SnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
+
+        fetchReviews();
+
         enterAnimation();
+    }
+
+    private void setupViewModel() {
+        MovieDetailViewModelFactory f = new MovieDetailViewModelFactory(mDb, mMovie.getId());
+        final MovieDetailViewModel viewModel =
+                ViewModelProviders.of(this, f).get(MovieDetailViewModel.class);
+        viewModel.getMovie().observe(this, new Observer<Movie>() {
+            @Override
+            public void onChanged(@Nullable Movie movie) {
+                isFavoriteMovie = (movie != null);
+                setFavoriteIcon();
+            }
+        });
     }
 
     private void setFavoriteIcon() {
@@ -112,15 +140,19 @@ public class MovieDetailActivity extends AppCompatActivity {
         return true;
     }
 
+    private void fetchReviews() {
+        String apiKey = getString(R.string.moviedb_api_key);
+        URL reviewsUrl = HttpHelper.createMovieReviewsUrl(String.valueOf(mMovie.getId()), apiKey);
+        new ReviewFetchTask().execute(reviewsUrl);
+    }
+
     /*
      * Method that will do the enter animation
      */
     private void enterAnimation() {
         mBackgroundView.setAlpha(0.0f);
-        mTitleTV.setAlpha(0.0f);
         mSubTitleLL.setAlpha(0.0f);
         mDescriptionTV.setAlpha(0.0f);
-        mTitleTV.setTranslationY(ANIMATION_OFFSET);
         mSubTitleLL.setTranslationY(ANIMATION_OFFSET);
         mDescriptionTV.setTranslationY(ANIMATION_OFFSET);
 
@@ -128,13 +160,6 @@ public class MovieDetailActivity extends AppCompatActivity {
                 .setStartDelay(100)
                 .setDuration(500)
                 .alpha(0.6f);
-
-        mTitleTV.animate()
-                .setStartDelay(600)
-                .setDuration(600)
-                .translationYBy(-ANIMATION_OFFSET)
-                .setInterpolator(new FastOutSlowInInterpolator())
-                .alpha(1.0f);
 
         mSubTitleLL.animate()
                 .setStartDelay(700)
@@ -149,5 +174,28 @@ public class MovieDetailActivity extends AppCompatActivity {
                 .translationYBy(-ANIMATION_OFFSET)
                 .setInterpolator(new FastOutSlowInInterpolator())
                 .alpha(1.0f);
+    }
+
+    class ReviewFetchTask extends AsyncTask<URL, Void, List<Review>> {
+
+        @Override
+        protected List<Review> doInBackground(URL... urls) {
+            URL url = urls[0];
+
+            try {
+                String results = HttpHelper.getResponseFromHttpUrl(url);
+                return HttpHelper.getReviewsFromJSONString(results);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(List<Review> reviews) {
+            if (reviews != null) {
+                mAdapter.setReviewList(reviews);
+            }
+        }
     }
 }
