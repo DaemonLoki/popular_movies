@@ -1,18 +1,21 @@
 package com.stefanblos.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
-import com.stefanblos.popularmovies.Data.AppDatabase;
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
@@ -20,6 +23,7 @@ import com.stefanblos.popularmovies.Util.HttpHelper;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieListAdapter.OnMoviePosterClickedListener {
 
@@ -62,12 +66,26 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
             case R.id.menu_item_favorites:
                 mSearchType = HttpHelper.MOVIE_DB_FAVORITES;
                 setTitle("Favorites");
-                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                mAdapter.setMovies(db.moviesDao().loadAllMovies());
+                setupViewModelForFavorites();
             default:
                 return super.onOptionsItemSelected(item);
         }
         return true;
+    }
+
+    private void setupViewModelForFavorites() {
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                if (mSearchType == HttpHelper.MOVIE_DB_FAVORITES) {
+                    mAdapter.setMovies(movies);
+                } else {
+                    movies.remove(this);
+                    Log.d("MainActivity", "Removed Observer");
+                }
+            }
+        });
     }
 
     private void fetchMovies() {

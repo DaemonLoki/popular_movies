@@ -1,8 +1,11 @@
 package com.stefanblos.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,6 +35,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     private static final float ANIMATION_OFFSET = 800.0f;
 
     private AppDatabase mDb;
+    private Movie mMovie;
+    private boolean isFavoriteMovie = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,31 +61,35 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         // setup movie image
         ImageView movieImageView = findViewById(R.id.iv_movie_poster);
-        final Movie movie = intent.getParcelableExtra(Constants.INTENT_MOVIE_EXTRA);
-        Picasso.with(this).load(movie.getImageLink()).into(movieImageView);
+        mMovie = intent.getParcelableExtra(Constants.INTENT_MOVIE_EXTRA);
+        Picasso.with(this).load(mMovie.getImageLink()).into(movieImageView);
 
-        String voteAvgText = String.valueOf(movie.getVoteAvg()) + " / 10";
+        String voteAvgText = String.valueOf(mMovie.getVoteAvg()) + " / 10";
         voteAvgTV.setText(voteAvgText);
-        releaseDateTV.setText(movie.getReleaseDate());
-        mDescriptionTV.setText(movie.getOverview());
+        releaseDateTV.setText(mMovie.getReleaseDate());
+        mDescriptionTV.setText(mMovie.getOverview());
 
-        setTitle(movie.getTitle());
+        setTitle(mMovie.getTitle());
 
         mDb = AppDatabase.getInstance(getApplicationContext());
 
-        if (mDb.moviesDao().loadMovieById(movie.getId()) != null) {
-            movie.setFavorite(true);
-        }
-        setFavoriteIcon(movie);
+        MovieDetailViewModelFactory f = new MovieDetailViewModelFactory(mDb, mMovie.getId());
+        final MovieDetailViewModel viewModel =
+                ViewModelProviders.of(this, f).get(MovieDetailViewModel.class);
+        viewModel.getMovie().observe(this, new Observer<Movie>() {
+            @Override
+            public void onChanged(@Nullable Movie movie) {
+                isFavoriteMovie = (movie != null);
+                setFavoriteIcon();
+            }
+        });
         mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                movie.setFavorite(!movie.isFavorite());
-                setFavoriteIcon(movie);
-                if (movie.isFavorite()) {
-                    mDb.moviesDao().insertMovie(movie);
+                if (isFavoriteMovie) {
+                    mDb.moviesDao().deleteMovie(mMovie);
                 } else {
-                    mDb.moviesDao().deleteMovie(movie);
+                    mDb.moviesDao().insertMovie(mMovie);
                 }
             }
         });
@@ -88,8 +97,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         enterAnimation();
     }
 
-    private void setFavoriteIcon(Movie movie) {
-        Drawable d = getDrawable(movie.isFavorite()
+    private void setFavoriteIcon() {
+        Drawable d = getDrawable(isFavoriteMovie
                 ? R.drawable.ic_star_filled : R.drawable.ic_star_empty);
         mFavoriteImageView.setImageDrawable(d);
     }
