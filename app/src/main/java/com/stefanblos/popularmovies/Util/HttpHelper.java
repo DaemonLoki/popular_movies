@@ -28,9 +28,11 @@ public class HttpHelper {
     final static String MOVIE_DB_API_KEY_QUERY = "api_key";
     public final static String MOVIE_DB_POPULAR = "popular";
     public final static String MOVIE_DB_TOP_RATED = "top_rated";
+    public final static String MOVIE_DB_FAVORITES = "favorites";
     final static String POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 
     // MOVIE_DB CONSTANTS
+    final static String KEY_ID = "id";
     final static String KEY_TITLE = "title";
     final static String KEY_POSTER_PATH = "poster_path";
     final static String KEY_OVERVIEW = "overview";
@@ -108,13 +110,14 @@ public class HttpHelper {
     @Nullable
     private static Movie getMovieFromJSONObject(JSONObject jsonObj) {
         try {
+            Integer id = jsonObj.getInt(KEY_ID);
             String title = jsonObj.getString(KEY_TITLE);
             String posterPath = jsonObj.getString(KEY_POSTER_PATH);
             String imageUrl = POSTER_BASE_URL + posterPath;
             String description = jsonObj.getString(KEY_OVERVIEW);
             float vote_avg = (float) jsonObj.getDouble(KEY_VOTE_AVERAGE);
             String releaseDate = jsonObj.getString(KEY_RELEASE_DATE);
-            return new Movie(title, imageUrl, description, vote_avg, releaseDate);
+            return new Movie(id, title, imageUrl, description, vote_avg, releaseDate);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

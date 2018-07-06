@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
+import com.stefanblos.popularmovies.Data.AppDatabase;
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
@@ -58,6 +59,11 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
                 mSearchType = HttpHelper.MOVIE_DB_TOP_RATED;
                 fetchMovies();
                 break;
+            case R.id.menu_item_favorites:
+                mSearchType = HttpHelper.MOVIE_DB_FAVORITES;
+                setTitle("Favorites");
+                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+                mAdapter.setMovies(db.moviesDao().loadAllMovies());
             default:
                 return super.onOptionsItemSelected(item);
         }

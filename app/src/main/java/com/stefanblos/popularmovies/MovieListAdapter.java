@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 import com.stefanblos.popularmovies.Model.Movie;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  Adapter that manages the content of the RecyclerView holding the Movie Posters
@@ -36,11 +36,11 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
     }
 
-    private ArrayList<Movie> mMovieList;
+    private List<Movie> mMovieList;
     private Context mContext;
     private final OnMoviePosterClickedListener mClickListener;
 
-    MovieListAdapter(ArrayList<Movie> movies, Context context) {
+    MovieListAdapter(List<Movie> movies, Context context) {
         mMovieList = movies;
         mContext = context;
         mClickListener = (OnMoviePosterClickedListener) context;
@@ -67,7 +67,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
         return mMovieList.size();
     }
 
-    public void setMovies(ArrayList<Movie> movies) {
+    public void setMovies(List<Movie> movies) {
         mMovieList = movies;
         notifyDataSetChanged();
     }

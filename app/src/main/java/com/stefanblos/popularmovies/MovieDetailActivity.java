@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.stefanblos.popularmovies.Data.AppDatabase;
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.Util.Constants;
 
@@ -29,6 +30,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     private ImageView mFavoriteImageView;
 
     private static final float ANIMATION_OFFSET = 800.0f;
+
+    private AppDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +66,22 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         setTitle(movie.getTitle());
 
+        mDb = AppDatabase.getInstance(getApplicationContext());
+
+        if (mDb.moviesDao().loadMovieById(movie.getId()) != null) {
+            movie.setFavorite(true);
+        }
         setFavoriteIcon(movie);
         mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 movie.setFavorite(!movie.isFavorite());
                 setFavoriteIcon(movie);
+                if (movie.isFavorite()) {
+                    mDb.moviesDao().insertMovie(movie);
+                } else {
+                    mDb.moviesDao().deleteMovie(movie);
+                }
             }
         });
 
