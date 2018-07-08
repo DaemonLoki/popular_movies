@@ -26,25 +26,34 @@ public class HttpHelper {
     private static final String TAG = HttpHelper.class.getSimpleName();
 
     // NETWORKING CONSTANTS
-    final static String MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/movie/";
-    final static String MOVIE_DB_API_KEY_QUERY = "api_key";
+    private final static String MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/movie/";
+    private final static String MOVIE_DB_API_KEY_QUERY = "api_key";
     public final static String MOVIE_DB_POPULAR = "popular";
     public final static String MOVIE_DB_TOP_RATED = "top_rated";
     public final static String MOVIE_DB_FAVORITES = "favorites";
-    final static String POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
+    private final static String POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 
     // MOVIE_DB CONSTANTS
-    final static String KEY_ID = "id";
-    final static String KEY_TITLE = "title";
-    final static String KEY_POSTER_PATH = "poster_path";
-    final static String KEY_OVERVIEW = "overview";
-    final static String KEY_VOTE_AVERAGE = "vote_average";
-    final static String KEY_RELEASE_DATE = "release_date";
+    private final static String KEY_ID = "id";
+    private final static String KEY_TITLE = "title";
+    private final static String KEY_POSTER_PATH = "poster_path";
+    private final static String KEY_OVERVIEW = "overview";
+    private final static String KEY_VOTE_AVERAGE = "vote_average";
+    private final static String KEY_RELEASE_DATE = "release_date";
 
     // REVIEW CONSTANTS
     private final static String MOVIE_DB_REVIEWS_KEY = "reviews";
     private final static String KEY_AUTHOR = "author";
     private final static String KEY_CONTENT = "content";
+
+    // VIDEO CONSTANTS
+    private final static String MOVIE_DB_VIDEOS_KEY = "videos";
+    private final static String KEY_KEY = "key";
+    private final static String KEY_NAME = "name";
+    private final static String KEY_SITE = "site";
+    private final static String KEY_TYPE = "type";
+    private final static String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
+    private final static String YOUTUBE_VIDEO_KEY_QUERY = "v";
 
     /*
      * This method is intended to create the URL for the AsyncTask that fetches the movie list
@@ -75,6 +84,23 @@ public class HttpHelper {
                 Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
                 .appendPath(movieId)
                 .appendPath(MOVIE_DB_REVIEWS_KEY)
+                .appendQueryParameter(MOVIE_DB_API_KEY_QUERY, apiKey)
+                .build();
+        Log.d(TAG, "Built uri is: " + builtUri.toString());
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "URL could not be created!", e.fillInStackTrace());
+            return null;
+        }
+    }
+
+    @Nullable
+    public static URL createMovieVideosUrl(String movieId, String apiKey) {
+        Uri builtUri =
+                Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
+                .appendPath(movieId)
+                .appendPath(MOVIE_DB_VIDEOS_KEY)
                 .appendQueryParameter(MOVIE_DB_API_KEY_QUERY, apiKey)
                 .build();
         Log.d(TAG, "Built uri is: " + builtUri.toString());
@@ -149,6 +175,24 @@ public class HttpHelper {
         }
     }
 
+    public static List<String> getVideoLinksFromJSONString(String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONArray resultsArray = jsonObject.getJSONArray("results");
+            ArrayList<String> videoLinks = new ArrayList<>();
+            for (int i = 0; i < resultsArray.length(); i++) {
+                String videoLink = getVideoLinkFromJSONObject(resultsArray.getJSONObject(i));
+                if (!videoLink.isEmpty()) {
+                    videoLinks.add(videoLink);
+                }
+            }
+            return videoLinks;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     /*
      * Method to get a single movie with all attributes from a JSON object
      */
@@ -178,6 +222,36 @@ public class HttpHelper {
             return new Review(author, content);
         } catch (JSONException e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    private static String getVideoLinkFromJSONObject(JSONObject jsonObject) {
+        try {
+            String key = jsonObject.getString(KEY_KEY);
+            String name = jsonObject.getString(KEY_NAME);
+            String site = jsonObject.getString(KEY_SITE);
+            String type = jsonObject.getString(KEY_TYPE);
+            URL youtube_link = createYoutubeURLByKey(key);
+            Log.d(TAG, "[VIDEO] key: " + key + ", name: " + name + ", site: " + site +
+                    ", type: " + String.valueOf(type) + ", youtube_link: " + youtube_link);
+            return name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    private static URL createYoutubeURLByKey(String key) {
+        Uri builtUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+                .appendQueryParameter(YOUTUBE_VIDEO_KEY_QUERY, key).build();
+        Log.d(TAG, "Youtube link is: " + builtUri.toString());
+        try {
+            return new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "URL could not be created!", e.fillInStackTrace());
             return null;
         }
     }

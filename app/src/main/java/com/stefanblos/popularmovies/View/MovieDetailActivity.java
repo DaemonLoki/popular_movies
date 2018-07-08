@@ -109,6 +109,8 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         fetchReviews();
 
+        fetchVideoLinks();
+
         enterAnimation();
     }
 
@@ -144,6 +146,12 @@ public class MovieDetailActivity extends AppCompatActivity {
         String apiKey = getString(R.string.moviedb_api_key);
         URL reviewsUrl = HttpHelper.createMovieReviewsUrl(String.valueOf(mMovie.getId()), apiKey);
         new ReviewFetchTask().execute(reviewsUrl);
+    }
+
+    private void fetchVideoLinks() {
+        String apiKey = getString(R.string.moviedb_api_key);
+        URL videosUrl = HttpHelper.createMovieVideosUrl(String.valueOf(mMovie.getId()), apiKey);
+        new VideoLinkFetchTask().execute(videosUrl);
     }
 
     /*
@@ -196,6 +204,22 @@ public class MovieDetailActivity extends AppCompatActivity {
             if (reviews != null) {
                 mAdapter.setReviewList(reviews);
             }
+        }
+    }
+
+    class VideoLinkFetchTask extends AsyncTask<URL, Void, List> {
+
+        @Override
+        protected List doInBackground(URL... urls) {
+            URL url = urls[0];
+
+            try {
+                String results = HttpHelper.getResponseFromHttpUrl(url);
+                return HttpHelper.getVideoLinksFromJSONString(results);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 }
