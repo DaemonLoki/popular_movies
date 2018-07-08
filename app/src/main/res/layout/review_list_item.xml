@@ -20,10 +20,17 @@
             android:id="@+id/tv_review_author"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:textColor="@color/whiteText"
             android:textStyle="italic"
             android:textSize="20sp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:background="#c4c4c4"
+            android:alpha="0.6"/>
 
         <ScrollView
             android:layout_width="match_parent"
