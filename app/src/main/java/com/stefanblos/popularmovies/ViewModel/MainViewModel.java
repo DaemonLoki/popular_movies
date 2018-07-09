@@ -12,8 +12,6 @@ import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private static final String TAG = MainViewModel.class.getSimpleName();
-
     private LiveData<List<Movie>> movies;
 
     public MainViewModel(@NonNull Application app) {

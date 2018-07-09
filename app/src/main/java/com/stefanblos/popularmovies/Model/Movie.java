@@ -12,36 +12,36 @@ import android.os.Parcelable;
 public class Movie implements Parcelable {
 
     @PrimaryKey
-    private final Integer _id;
-    private final String _title;
-    private final String _imageLink;
-    private final String _overview;
-    private final float _voteAvg;
-    private final String _releaseDate;
+    private final Integer id;
+    private final String title;
+    private final String imageLink;
+    private final String overview;
+    private final float voteAvg;
+    private final String releaseDate;
 
     public Movie(Integer id, String title, String imageLink,String overview, float voteAvg, String releaseDate) {
-        _id = id;
-        _title = title;
-        _imageLink = imageLink;
-        _overview = overview;
-        _voteAvg = voteAvg;
-        _releaseDate = releaseDate;
+        this.id = id;
+        this.title = title;
+        this.imageLink = imageLink;
+        this.overview = overview;
+        this.voteAvg = voteAvg;
+        this.releaseDate = releaseDate;
     }
 
-    public Integer getId() { return _id; }
-    public String getTitle() { return _title; }
-    public String getImageLink() { return _imageLink; }
-    public String getOverview() { return _overview; }
-    public float getVoteAvg() { return _voteAvg; }
-    public String getReleaseDate() { return _releaseDate; }
+    public Integer getId() { return id; }
+    public String getTitle() { return title; }
+    public String getImageLink() { return imageLink; }
+    public String getOverview() { return overview; }
+    public float getVoteAvg() { return voteAvg; }
+    public String getReleaseDate() { return releaseDate; }
 
     private Movie(Parcel in) {
-        this._id = in.readInt();
-        this._title = in.readString();
-        this._imageLink = in.readString();
-        this._overview = in.readString();
-        this._voteAvg = in.readFloat();
-        this._releaseDate = in.readString();
+        this.id = in.readInt();
+        this.title = in.readString();
+        this.imageLink = in.readString();
+        this.overview = in.readString();
+        this.voteAvg = in.readFloat();
+        this.releaseDate = in.readString();
     }
 
     @Override
@@ -51,12 +51,12 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(_id);
-        parcel.writeString(_title);
-        parcel.writeString(_imageLink);
-        parcel.writeString(_overview);
-        parcel.writeFloat(_voteAvg);
-        parcel.writeString(_releaseDate);
+        parcel.writeInt(id);
+        parcel.writeString(title);
+        parcel.writeString(imageLink);
+        parcel.writeString(overview);
+        parcel.writeFloat(voteAvg);
+        parcel.writeString(releaseDate);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR

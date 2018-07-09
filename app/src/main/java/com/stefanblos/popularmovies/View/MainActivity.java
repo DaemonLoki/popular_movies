@@ -1,9 +1,9 @@
 package com.stefanblos.popularmovies.View;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -16,18 +16,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
-import com.stefanblos.popularmovies.ViewModel.MainViewModel;
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.R;
 import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
+import com.stefanblos.popularmovies.Util.MovieFetchTask;
+import com.stefanblos.popularmovies.ViewModel.MainViewModel;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MovieListAdapter.OnMoviePosterClickedListener {
+public class MainActivity extends AppCompatActivity implements
+        MovieListAdapter.OnMoviePosterClickedListener, MovieFetchTask.OnMovieTaskCompleted {
 
     private ArrayList<Movie> mMovieList = new ArrayList<>();
     private MovieListAdapter mAdapter;
@@ -77,14 +78,17 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
     private void setupViewModelForFavorites() {
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+        final LiveData<List<Movie>> moviesLiveData = viewModel.getMovies();
+        moviesLiveData.observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(@Nullable List<Movie> movies) {
-                if (mSearchType == HttpHelper.MOVIE_DB_FAVORITES) {
+                if (mSearchType.equals(HttpHelper.MOVIE_DB_FAVORITES)) {
                     mAdapter.setMovies(movies);
                 } else {
-                    movies.remove(this);
-                    Log.d("MainActivity", "Removed Observer");
+                    if (movies != null) {
+                        moviesLiveData.removeObserver(this);
+                        Log.d("MainActivity", "Removed Observer");
+                    }
                 }
             }
         });
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
     private void fetchMovies() {
         String apiKey = getString(R.string.moviedb_api_key);
         URL url = HttpHelper.createMovieDBUrl(mSearchType, apiKey);
-        new MovieFetchTask().execute(url);
+        new MovieFetchTask(MainActivity.this).execute(url);
     }
 
     @Override
@@ -106,40 +110,19 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         startActivity(intent, options.toBundle());
     }
 
-    /**
-     * My task to fetch movies from the MovieDB database
-     */
-    class MovieFetchTask extends AsyncTask<URL, Void, ArrayList<Movie>> {
-
-        @Override
-        protected ArrayList<Movie> doInBackground(URL... urls) {
-            URL url = urls[0];
-
-            try {
-                String results = HttpHelper.getResponseFromHttpUrl(url);
-                return HttpHelper.getMoviesFromJSONString(results);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+    @Override
+    public void onFetchMovieTaskCompleted(ArrayList<Movie> movies) {
+        mMovieList = movies;
+        mAdapter.setMovies(mMovieList);
+        String title = "Movies";
+        switch (mSearchType) {
+            case HttpHelper.MOVIE_DB_POPULAR:
+                title = "Popular Movies";
+                break;
+            case HttpHelper.MOVIE_DB_TOP_RATED:
+                title = "Top Rated Movies";
+                break;
         }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> movies) {
-            if (movies != null) {
-                mMovieList = movies;
-                mAdapter.setMovies(mMovieList);
-                String title = "Movies";
-                switch (mSearchType) {
-                    case HttpHelper.MOVIE_DB_POPULAR:
-                        title = "Popular Movies";
-                        break;
-                    case HttpHelper.MOVIE_DB_TOP_RATED:
-                        title = "Top Rated Movies";
-                        break;
-                }
-                setTitle(title);
-            }
-        }
+        setTitle(title);
     }
 }

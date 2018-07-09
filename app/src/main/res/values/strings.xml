@@ -7,4 +7,5 @@
     <string name="sort_by_top_rated">Show Top Rated Movies</string>
     <string name="favorite_movie_image">Favorite Movie Image</string>
     <string name="show_favorites">Show Favorites</string>
+    <string name="watch_on_youtube">WATCH ON YOUTUBE</string>
 </resources>

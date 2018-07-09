@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
@@ -25,17 +24,22 @@ import com.squareup.picasso.Picasso;
 import com.stefanblos.popularmovies.Data.AppDatabase;
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.Model.Review;
+import com.stefanblos.popularmovies.Model.Trailer;
 import com.stefanblos.popularmovies.R;
+import com.stefanblos.popularmovies.Util.AppExecutors;
 import com.stefanblos.popularmovies.Util.Constants;
 import com.stefanblos.popularmovies.Util.HttpHelper;
+import com.stefanblos.popularmovies.Util.ReviewFetchTask;
+import com.stefanblos.popularmovies.Util.VideoLinkFetchTask;
 import com.stefanblos.popularmovies.ViewModel.MovieDetailViewModel;
 import com.stefanblos.popularmovies.ViewModel.MovieDetailViewModelFactory;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class MovieDetailActivity extends AppCompatActivity {
+public class MovieDetailActivity extends AppCompatActivity implements
+        TrailerListAdapter.OnTrailerCardClickedListener, ReviewFetchTask.OnReviewTaskCompleted,
+        VideoLinkFetchTask.OnVideoTaskCompleted {
 
     private static final String TAG = MovieDetailActivity.class.getSimpleName();
 
@@ -50,7 +54,8 @@ public class MovieDetailActivity extends AppCompatActivity {
     private AppDatabase mDb;
     private Movie mMovie;
     private boolean isFavoriteMovie = false;
-    private ReviewListAdapter mAdapter;
+    private ReviewListAdapter mReviewsAdapter;
+    private TrailerListAdapter mTrailersAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,28 +95,50 @@ public class MovieDetailActivity extends AppCompatActivity {
         mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isFavoriteMovie) {
-                    mDb.moviesDao().deleteMovie(mMovie);
-                } else {
-                    mDb.moviesDao().insertMovie(mMovie);
+            AppExecutors.getInstance().getDiskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (isFavoriteMovie) {
+                        mDb.moviesDao().deleteMovie(mMovie);
+                    } else {
+                        mDb.moviesDao().insertMovie(mMovie);
+                    }
                 }
+            });
             }
         });
 
-        RecyclerView recyclerView = findViewById(R.id.rv_reviews);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(
-                this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new ReviewListAdapter();
-        recyclerView.setAdapter(mAdapter);
-        SnapHelper snapHelper = new LinearSnapHelper();
-        snapHelper.attachToRecyclerView(recyclerView);
+        setupReviewsRecyclerView();
+
+        setupTrailersRecyclerView();
 
         fetchReviews();
 
         fetchVideoLinks();
 
         enterAnimation();
+    }
+
+    private void setupReviewsRecyclerView() {
+        RecyclerView recyclerView = findViewById(R.id.rv_reviews);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(
+                this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        SnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
+        mReviewsAdapter = new ReviewListAdapter();
+        recyclerView.setAdapter(mReviewsAdapter);
+    }
+
+    private void setupTrailersRecyclerView() {
+        RecyclerView recyclerView = findViewById(R.id.rv_trailers);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(
+                this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        SnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
+        mTrailersAdapter = new TrailerListAdapter(this);
+        recyclerView.setAdapter(mTrailersAdapter);
     }
 
     private void setupViewModel() {
@@ -145,13 +172,13 @@ public class MovieDetailActivity extends AppCompatActivity {
     private void fetchReviews() {
         String apiKey = getString(R.string.moviedb_api_key);
         URL reviewsUrl = HttpHelper.createMovieReviewsUrl(String.valueOf(mMovie.getId()), apiKey);
-        new ReviewFetchTask().execute(reviewsUrl);
+        new ReviewFetchTask(MovieDetailActivity.this).execute(reviewsUrl);
     }
 
     private void fetchVideoLinks() {
         String apiKey = getString(R.string.moviedb_api_key);
         URL videosUrl = HttpHelper.createMovieVideosUrl(String.valueOf(mMovie.getId()), apiKey);
-        new VideoLinkFetchTask().execute(videosUrl);
+        new VideoLinkFetchTask(MovieDetailActivity.this).execute(videosUrl);
     }
 
     /*
@@ -184,42 +211,20 @@ public class MovieDetailActivity extends AppCompatActivity {
                 .alpha(1.0f);
     }
 
-    class ReviewFetchTask extends AsyncTask<URL, Void, List<Review>> {
-
-        @Override
-        protected List<Review> doInBackground(URL... urls) {
-            URL url = urls[0];
-
-            try {
-                String results = HttpHelper.getResponseFromHttpUrl(url);
-                return HttpHelper.getReviewsFromJSONString(results);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Review> reviews) {
-            if (reviews != null) {
-                mAdapter.setReviewList(reviews);
-            }
-        }
+    @Override
+    public void onTrailerCardClicked(String key) {
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                HttpHelper.createYoutubeURLByKey(key));
+        getApplicationContext().startActivity(webIntent);
     }
 
-    class VideoLinkFetchTask extends AsyncTask<URL, Void, List> {
+    @Override
+    public void onFetchReviewsTaskCompleted(List<Review> reviews) {
+        mReviewsAdapter.setReviewList(reviews);
+    }
 
-        @Override
-        protected List doInBackground(URL... urls) {
-            URL url = urls[0];
-
-            try {
-                String results = HttpHelper.getResponseFromHttpUrl(url);
-                return HttpHelper.getVideoLinksFromJSONString(results);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+    @Override
+    public void onFetchVideoLinkCompleted(List<Trailer> trailers) {
+        mTrailersAdapter.setTrailerList(trailers);
     }
 }

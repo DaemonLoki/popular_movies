@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.stefanblos.popularmovies.Model.Movie;
 import com.stefanblos.popularmovies.Model.Review;
+import com.stefanblos.popularmovies.Model.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +25,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class HttpHelper {
 
     private static final String TAG = HttpHelper.class.getSimpleName();
+
+    private static final int CONNECTION_TIMEOUT = 5000;
 
     // NETWORKING CONSTANTS
     private final static String MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/movie/";
@@ -50,7 +53,6 @@ public class HttpHelper {
     private final static String MOVIE_DB_VIDEOS_KEY = "videos";
     private final static String KEY_KEY = "key";
     private final static String KEY_NAME = "name";
-    private final static String KEY_SITE = "site";
     private final static String KEY_TYPE = "type";
     private final static String YOUTUBE_BASE_URL = "https://www.youtube.com/watch";
     private final static String YOUTUBE_VIDEO_KEY_QUERY = "v";
@@ -119,7 +121,7 @@ public class HttpHelper {
     @Nullable
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-
+        urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
         try {
             InputStream in = urlConnection.getInputStream();
 
@@ -175,18 +177,18 @@ public class HttpHelper {
         }
     }
 
-    public static List<String> getVideoLinksFromJSONString(String jsonString) {
+    public static List<Trailer> getTrailersFromJSONString(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray resultsArray = jsonObject.getJSONArray("results");
-            ArrayList<String> videoLinks = new ArrayList<>();
+            ArrayList<Trailer> trailers = new ArrayList<>();
             for (int i = 0; i < resultsArray.length(); i++) {
-                String videoLink = getVideoLinkFromJSONObject(resultsArray.getJSONObject(i));
-                if (!videoLink.isEmpty()) {
-                    videoLinks.add(videoLink);
+                Trailer trailer = getTrailerFromJSONObject(resultsArray.getJSONObject(i));
+                if (trailer != null) {
+                    trailers.add(trailer);
                 }
             }
-            return videoLinks;
+            return trailers;
         } catch (JSONException e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -218,7 +220,6 @@ public class HttpHelper {
         try {
             String author = jsonObject.getString(KEY_AUTHOR);
             String content = jsonObject.getString(KEY_CONTENT);
-            Log.d(TAG, "Review: author: " + author + ", content: " + content);
             return new Review(author, content);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -227,16 +228,12 @@ public class HttpHelper {
     }
 
     @Nullable
-    private static String getVideoLinkFromJSONObject(JSONObject jsonObject) {
+    private static Trailer getTrailerFromJSONObject(JSONObject jsonObject) {
         try {
             String key = jsonObject.getString(KEY_KEY);
             String name = jsonObject.getString(KEY_NAME);
-            String site = jsonObject.getString(KEY_SITE);
             String type = jsonObject.getString(KEY_TYPE);
-            URL youtube_link = createYoutubeURLByKey(key);
-            Log.d(TAG, "[VIDEO] key: " + key + ", name: " + name + ", site: " + site +
-                    ", type: " + String.valueOf(type) + ", youtube_link: " + youtube_link);
-            return name;
+            return new Trailer(name, type, key);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -244,15 +241,8 @@ public class HttpHelper {
     }
 
     @Nullable
-    private static URL createYoutubeURLByKey(String key) {
-        Uri builtUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+    public static Uri createYoutubeURLByKey(String key) {
+        return Uri.parse(YOUTUBE_BASE_URL).buildUpon()
                 .appendQueryParameter(YOUTUBE_VIDEO_KEY_QUERY, key).build();
-        Log.d(TAG, "Youtube link is: " + builtUri.toString());
-        try {
-            return new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "URL could not be created!", e.fillInStackTrace());
-            return null;
-        }
     }
 }

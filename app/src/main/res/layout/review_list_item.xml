@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="20dp">
+    android:layout_margin="@dimen/list_item_margin">
 
     <View android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,7 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="20dp"
+        android:layout_margin="@dimen/card_inner_margin"
         android:orientation="vertical">
 
         <TextView
@@ -22,14 +22,14 @@
             android:layout_height="wrap_content"
             android:textColor="@color/whiteText"
             android:textStyle="italic"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/small_text_size"/>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="10dp"
-            android:background="#c4c4c4"
+            android:layout_height="@dimen/item_separator_height"
+            android:layout_marginTop="@dimen/review_list_item_separator_margin_top"
+            android:layout_marginBottom="@dimen/review_list_item_separator_margin_bottom"
+            android:background="@color/grayLineColor"
             android:alpha="0.6"/>
 
         <ScrollView

@@ -2,16 +2,16 @@ package com.stefanblos.popularmovies.Model;
 
 public class Review {
 
-    private final String _author;
-    private final String _text;
+    private final String author;
+    private final String text;
 
     public Review(String author, String text) {
-        _author = author;
-        _text = text;
+        this.author = author;
+        this.text = text;
     }
 
-    public String getAuthor() { return _author; }
+    public String getAuthor() { return author; }
 
-    public String getText() { return _text; }
+    public String getText() { return text; }
 
 }
