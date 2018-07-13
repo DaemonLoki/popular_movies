@@ -1,50 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="@dimen/list_item_margin">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="@dimen/list_item_margin"
+    android:layout_marginBottom="@dimen/list_item_margin"
+    android:padding="@dimen/card_inner_padding"
+    android:background="@drawable/rounded_bg">
 
-    <View android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/rounded_bg"
-        android:alpha="0.3" />
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_review_author"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/card_inner_margin"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:textColor="@color/whiteText"
+        android:textStyle="italic"
+        android:textSize="@dimen/small_text_size"/>
 
-        <TextView
-            android:id="@+id/tv_review_author"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/whiteText"
-            android:textStyle="italic"
-            android:textSize="@dimen/small_text_size"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_separator_height"
+        android:layout_marginTop="@dimen/review_list_item_separator_margin_top"
+        android:layout_marginBottom="@dimen/review_list_item_separator_margin_bottom"
+        android:background="@color/grayLineColor"
+        android:alpha="0.6"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_separator_height"
-            android:layout_marginTop="@dimen/review_list_item_separator_margin_top"
-            android:layout_marginBottom="@dimen/review_list_item_separator_margin_bottom"
-            android:background="@color/grayLineColor"
-            android:alpha="0.6"/>
+    <TextView
+        android:id="@+id/tv_review_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/whiteText"/>
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <TextView
-                android:id="@+id/tv_review_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/whiteText"/>
-
-        </ScrollView>
-
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>

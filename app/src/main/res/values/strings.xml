@@ -8,4 +8,5 @@
     <string name="favorite_movie_image">Favorite Movie Image</string>
     <string name="show_favorites">Show Favorites</string>
     <string name="watch_on_youtube">WATCH ON YOUTUBE</string>
+    <string name="click_to_watch">CLICK TO WATCH </string>
 </resources>

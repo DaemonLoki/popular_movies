@@ -36,10 +36,12 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
 
     private List<Trailer> mTrailerList;
     private OnTrailerCardClickedListener mListener;
+    private String mClickToWatch;
 
     TrailerListAdapter(Context context) {
         mTrailerList = new ArrayList<>();
         mListener = (OnTrailerCardClickedListener) context;
+        mClickToWatch = context.getString(R.string.click_to_watch);
     }
 
     void setTrailerList(List<Trailer> trailers) {
@@ -58,7 +60,10 @@ public class TrailerListAdapter extends RecyclerView.Adapter<TrailerListAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Trailer trailer = mTrailerList.get(position);
-        holder.typeTextView.setText(trailer.getType().toUpperCase());
+        String typeText = mClickToWatch
+                .concat(" ")
+                .concat(trailer.getType().toUpperCase());
+        holder.typeTextView.setText(typeText);
         holder.nameTextView.setText(trailer.getName());
     }
 

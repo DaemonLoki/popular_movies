@@ -215,7 +215,11 @@ public class MovieDetailActivity extends AppCompatActivity implements
     public void onTrailerCardClicked(String key) {
         Intent webIntent = new Intent(Intent.ACTION_VIEW,
                 HttpHelper.createYoutubeURLByKey(key));
-        getApplicationContext().startActivity(webIntent);
+        if (webIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(webIntent);
+        } else {
+            Log.d(TAG, "Intent could not be send since there is nothing to resolve it");
+        }
     }
 
     @Override

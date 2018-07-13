@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
@@ -33,20 +34,56 @@ public class MainActivity extends AppCompatActivity implements
     private ArrayList<Movie> mMovieList = new ArrayList<>();
     private MovieListAdapter mAdapter;
     private String mSearchType = HttpHelper.MOVIE_DB_POPULAR;
+    private GridLayoutManager mLayoutManager;
+    private Parcelable mGridState;
+
+    private final static String GRID_STATE_KEY = "GRID_STATE_KEY";
+    private final static String SEARCH_TYPE_KEY = "SEARCH_TYPE_KEY";
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fetchMovies();
-
         RecyclerView recyclerView = findViewById(R.id.rv_movies);
-
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
-        recyclerView.setLayoutManager(layoutManager);
         mAdapter = new MovieListAdapter(mMovieList, this);
         recyclerView.setAdapter(mAdapter);
+
+        mLayoutManager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(mLayoutManager);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!mSearchType.equals(HttpHelper.MOVIE_DB_FAVORITES)) {
+            fetchMovies();
+        } else {
+            setupViewModelForFavorites();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        mGridState = mLayoutManager.onSaveInstanceState();
+        outState.putParcelable(GRID_STATE_KEY, mGridState);
+        outState.putString(SEARCH_TYPE_KEY, mSearchType);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            mGridState = savedInstanceState.getParcelable(GRID_STATE_KEY);
+            mSearchType = savedInstanceState.getString(SEARCH_TYPE_KEY);
+        }
+
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -57,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        mGridState = null;
         switch (item.getItemId()) {
             case R.id.menu_item_popular:
                 mSearchType = HttpHelper.MOVIE_DB_POPULAR;
@@ -114,6 +152,11 @@ public class MainActivity extends AppCompatActivity implements
     public void onFetchMovieTaskCompleted(ArrayList<Movie> movies) {
         mMovieList = movies;
         mAdapter.setMovies(mMovieList);
+        if (mGridState != null) {
+            mLayoutManager.onRestoreInstanceState(mGridState);
+        } else {
+            mLayoutManager.scrollToPosition(0);
+        }
         String title = "Movies";
         switch (mSearchType) {
             case HttpHelper.MOVIE_DB_POPULAR:
