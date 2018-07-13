@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements
         mAdapter = new MovieListAdapter(mMovieList, this);
         recyclerView.setAdapter(mAdapter);
 
-        mLayoutManager = new GridLayoutManager(this, 2);
+        mLayoutManager = new GridLayoutManager(this, getNumberOfColumns());
         recyclerView.setLayoutManager(mLayoutManager);
     }
 
@@ -162,5 +163,15 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
         setTitle(title);
+    }
+
+    private int getNumberOfColumns() {
+        if (getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_PORTRAIT){
+            return 2;
+        } else {
+            return 3;
+        }
+
     }
 }
