@@ -12,7 +12,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -40,11 +39,8 @@ public class MainActivity extends AppCompatActivity implements
     private final static String GRID_STATE_KEY = "GRID_STATE_KEY";
     private final static String SEARCH_TYPE_KEY = "SEARCH_TYPE_KEY";
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -106,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.menu_item_favorites:
                 mSearchType = HttpHelper.MOVIE_DB_FAVORITES;
-                setTitle("Favorites");
+                setTitle(getString(R.string.favorites_title));
                 setupViewModelForFavorites();
             default:
                 return super.onOptionsItemSelected(item);
@@ -125,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     if (movies != null) {
                         moviesLiveData.removeObserver(this);
-                        Log.d("MainActivity", "Removed Observer");
                     }
                 }
             }
@@ -157,13 +152,13 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             mLayoutManager.scrollToPosition(0);
         }
-        String title = "Movies";
+        String title = getString(R.string.movies_title);
         switch (mSearchType) {
             case HttpHelper.MOVIE_DB_POPULAR:
-                title = "Popular Movies";
+                title = getString(R.string.popular_movies_title);
                 break;
             case HttpHelper.MOVIE_DB_TOP_RATED:
-                title = "Top Rated Movies";
+                title = getString(R.string.top_rated_movies_title);
                 break;
         }
         setTitle(title);

@@ -9,4 +9,8 @@
     <string name="show_favorites">Show Favorites</string>
     <string name="watch_on_youtube">WATCH ON YOUTUBE</string>
     <string name="click_to_watch">CLICK TO WATCH </string>
+    <string name="movies_title">Movies</string>
+    <string name="popular_movies_title">Popular Movies</string>
+    <string name="top_rated_movies_title">Top Rated Movies</string>
+    <string name="favorites_title">Favorites</string>
 </resources>

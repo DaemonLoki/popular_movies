@@ -65,7 +65,6 @@ public class MovieDetailActivity extends AppCompatActivity implements
         Intent intent = getIntent();
         if (intent == null || !intent.hasExtra(Constants.INTENT_MOVIE_EXTRA)) {
             Toast.makeText(this, "Couldn't find movie!", Toast.LENGTH_LONG).show();
-            Log.d(TAG, "Movie was not set on Intent!");
             finish();
             return;
         }
